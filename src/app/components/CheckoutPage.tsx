@@ -76,7 +76,7 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
       clientSecret,          // The client secret returned by the PaymentIntent creation.
       confirmParams: {
         // After payment completes successfully, the user will be redirected here.
-        return_url: `http://www.localhost:3000/payment-success?amount=${amount}`,
+        return_url: `${window.location.origin}/payment-success?amount=${amount}`,
       },
     });
 
