@@ -19,6 +19,8 @@
     "@sanity/client": "^6.25.0",
     "@sanity/image-url": "^1.1.0",
     "@sanity/vision": "^3.70.0",
+    "@stripe/react-stripe-js": "^3.1.1",
+    "@stripe/stripe-js": "^5.6.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "dotenv": "^16.4.7",
@@ -32,6 +34,7 @@
     "react-star-ratings": "^2.3.0",
     "react-toastify": "^11.0.3",
     "sanity": "^3.70.0",
+    "stripe": "^17.6.0",
     "styled-components": "^6.1.14",
     "tailwind-merge": "^2.6.0",
     "use-shopping-cart": "^3.2.0"

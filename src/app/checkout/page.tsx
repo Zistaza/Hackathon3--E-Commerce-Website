@@ -1,65 +1,53 @@
+// Enable client-side rendering in Next.js (client components).
 "use client";
-import { useShipping } from "@/context/ShippingContext";
-import Image from "next/image";
-import Link from "next/link";
-import { useShoppingCart } from "use-shopping-cart";
 
-function Checkout() {
-  const { cartDetails, totalPrice } = useShoppingCart();
-  const { shippingCost } = useShipping(); // Get shipping cost
+// Import the CheckoutPage component and a helper function to convert amounts to subcurrency.
+// Import Stripe-specific components and methods for creating and managing payments.
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import CheckoutPage from "../components/CheckoutPage";
+import convertToSubcurrency from "../../../lib/convertToSubcurrency";
 
-  console.log("cartDetails", cartDetails);
-  console.log("Shipping Cost:", shippingCost);
-
-  // Calculate final total (items total + shipping cost)
-  const finalTotal = (totalPrice || 0) + (shippingCost || 0);
-
-  return (
-    <div className="min-h-screen bg-gray-100 py-10 px-5">
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
-
-        {Object.values(cartDetails ?? {}).map((item, i) => (
-          <div key={i}>
-            <div className="w-full flex md:gap-4 gap-2 mb-4 items-center">
-              <div className="w-[70px]">
-                <Image src={item?.image || ""} height={1000} width={1000} alt="" />
-              </div>
-              <div className="flex w-full items-center md:justify-between">
-                <div>
-                  <h4 className="text-[14px] font-semibold">{item.name}</h4>
-                  <h5 className="text-tertiary pt-3">Quantity: {item.quantity}</h5>
-                </div>
-                <div className="w-[160px] text-right">
-                  <h4>${item.price}</h4>
-                </div>
-              </div>
-            </div>
-            <div className="border-[1px] mb-4"></div>
-          </div>
-        ))}
-
-        {/* Shipping Cost */}
-        <div className="flex justify-between items-center py-4">
-          <h3 className="text-lg font-semibold">Shipping Cost:</h3>
-          <span className="text-lg font-bold">${shippingCost.toFixed(2)}</span>
-        </div>
-
-        {/* Total Price */}
-        <div className="flex justify-between items-center py-4 border-t">
-          <h3 className="text-xl font-semibold">Total:</h3>
-          <span className="text-xl font-bold">${finalTotal.toFixed(2)}</span>
-        </div>
-
-        {/* Payment Button */}
-        <Link href={"/Pages/Ordercomplete"}>
-          <button className="w-full bg-blue-600 text-white py-3 mt-4 rounded-md hover:bg-blue-700 transition">
-            Proceed to Payment
-          </button>
-        </Link>
-      </div>
-    </div>
-  );
+// Validate that the public Stripe key is defined in the environment variables.
+if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
+  throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
 }
 
-export default Checkout;
+// Initialize the Stripe instance using the provided public key.
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+// Define the main component for the home page.
+export default function Home() {
+  // The amount requested for payment.
+  const amount = 49.99;
+
+  // Return the main content of the page.
+  return (
+    // Use Tailwind CSS classes for styling and layout.
+    <main className="max-w-6xl mx-auto p-10 text-white text-center border m-10 rounded-md bg-gradient-to-tr from-slate-400 to-zinc-900">
+      
+      {/* A header section for displaying who requested payment and how much. */}
+      <div className="mb-10">
+        <h1 className="text-4xl font-extrabold mb-2">Zeenat Yameen</h1>
+        <h2 className="text-2xl">
+          has requested
+          <span className="font-bold"> ${amount}</span>
+        </h2>
+      </div>
+
+      {/* Wrap the checkout page in Stripe's Elements component, which provides context 
+          for Stripe Elements within this part of the application. */}
+      <Elements
+        stripe={stripePromise}       // The promise that resolves to a Stripe instance.
+        options={{
+          mode: "payment",           // The payment mode for Stripe Elements.
+          amount: convertToSubcurrency(amount),  // Convert amount to subcurrency (e.g., cents).
+          currency: "usd",           // The currency to use for the payment.
+        }}
+      >
+        {/* Render the CheckoutPage component, passing the amount as a prop. */}
+        <CheckoutPage amount={amount} />
+      </Elements>
+    </main>
+  );
+}
